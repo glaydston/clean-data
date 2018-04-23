@@ -1,0 +1,113 @@
+---
+title: "clean_data"
+author: "Glaydston Veloso"
+date: "4/22/2018"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Install dependencies
+install.packages("readxl")
+install.packages("Hmisc")
+
+# Set the current directory as default
+sourceDir <- setwd(".")
+setwd(sourceDir)
+```
+
+## Loading the files
+
+In this point we loading the file to the variable:
+
+- dataToClean
+
+```{r}
+library(readxl)
+dataToClean <- read_excel("DataToClean.xlsx", 1)  # read first sheet
+head(dataToClean[, 1:5])
+```
+
+# Fill down
+
+Fill all the colunm with the initial information:
+
+```{r}
+library(tidyr)
+
+cleanedData <- dataToClean %>%
+  fill(`Area (use fill down)`)
+  
+head(cleanedData)
+```
+
+# Replace a character with a space
+
+```{r} 
+library("Hmisc")
+library(data.table) 
+
+replaceData = data.table()
+replaceData <- dataToClean[, 3];
+replaceData[, "Street"] <- lapply(dataToClean[, 3], function(line) { gsub( "å", " ", line) })
+replaceData[, "Street"] <- lapply(replaceData[, "Street"], capitalize)
+
+head(replaceData[, 1:2])
+
+# Set the values on the general table
+cleanedData[, 3] <- replaceData[, 2]
+
+```
+
+# Capitalize the titles
+
+Here I'm using the function _capitalize_ from the library **Hmisc** to change the titles of the column 4 from the table with support of the _lapply_ function:
+
+```{r}
+library("Hmisc")
+library(data.table) 
+
+capitalizeData = data.table()
+capitalizeData <- dataToClean[, 4];
+capitalizeData[, "Street 2"]<- lapply(dataToClean[, 4], capitalize)
+
+head(capitalizeData[, 1:2])
+
+# Set the values on the general table
+cleanedData[, 4] <- capitalizeData[, 2]
+```
+
+# Unescape the HTML from colun
+
+I've used the library **xml2** to unescape all the HTML characters and the _apply_ function to indicate the we need to run the function on all rows of the table.
+
+```{r}
+library("xml2")
+library(data.table) 
+
+unescape_html <- function(str){
+  xml2::xml_text(xml2::read_html(paste0("<x>", str, "</x>")))
+}
+
+unescapeData = data.table()
+unescapeData <- dataToClean[, 5];
+unescapeData[, "HTML"] <- apply(dataToClean[, 5], MARGIN = 1, unescape_html)
+head(unescapeData[, 1:2])
+
+# Set the values on the general table
+cleanedData[, 5] <- unescapeData[, 2]
+```
+
+# Write the clean to file
+
+In this point we'll use the write.csv function to export the clean data
+
+```{r}
+library(readxl)
+write.csv(cleanedData, "cleanedData.csv", row.names=F)
+cleanedData <- read.csv("cleanedData.csv", stringsAsFactors=F) 
+head(cleanedData)
+```
