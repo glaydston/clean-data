@@ -21,7 +21,7 @@ setwd(sourceDir)
 
 ## Loading the files
 
-In this point we loading the file to the variable:
+In this point we're loading the file to the variable:
 
 - dataToClean
 
@@ -33,7 +33,7 @@ head(dataToClean[, 1:5])
 
 # Fill down
 
-Fill all the colunm with the initial information:
+Fill all the colunm with the fisrt row:
 
 ```{r}
 library(tidyr)
@@ -101,9 +101,9 @@ head(unescapeData[, 1:2])
 cleanedData[, 5] <- unescapeData[, 2]
 ```
 
-# Write the clean to file
+# Export the table to file
 
-In this point we'll use the write.csv function to export the clean data
+In this point we'll use the write.csv function to export the cleaned data
 
 ```{r}
 library(readxl)
